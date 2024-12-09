@@ -12,10 +12,13 @@
   "description": "",
   "type": "module",
   "dependencies": {
+    "@google-cloud/firestore": "^7.11.0",
     "cors": "^2.8.5",
     "express": "^4.21.2"
   },
   "devDependencies": {
-    "nodemon": "^3.1.7"
+    "eslint": "^9.16.0",
+    "nodemon": "^3.1.7",
+    "prettier": "^3.4.2"
   }
 }
