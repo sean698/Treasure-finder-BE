@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "deploy": "gcloud functions deploy treasure-finder-be --entry-point treasureFinder --runtime nodejs20"
+    "deploy": "gcloud functions deploy treasure-finder-be --entry-point treasureFinder --runtime nodejs20 --trigger-http --allow-unauthenticated"
   },
   "keywords": [],
   "author": "",
