@@ -5,49 +5,51 @@ import { SOURCES } from "../constants.js";
 const rentalRouter = Router();
 const db = new Firestore();
 
-rentalRouter.get("/:source", async (req, res) => {
-  try {
-    const { source } = req.params;
-    const snapshot = await db
-      .collection("rental_listings")
-      .where("source", "==", source)
-      .get();
-
-    res.json(
-      snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }))
-    );
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
 rentalRouter.get("/", async (req, res) => {
   try {
-    const snapshot = await db.collection("rental_listings").get();
+    const {
+      locations,
+      sources,
+      minPrice,
+      maxPrice,
+      page = 1,
+      limit = 40,
+    } = req.query;
+    const pageNumber = parseInt(page);
+    const limitNumber = parseInt(limit);
+    const offset = (pageNumber - 1) * limitNumber;
 
-    const allListings = {
-      [SOURCES.CRAIGSLIST]: [],
-      [SOURCES.VANPEOPLE]: [],
-      [SOURCES.KIJIJI]: [],
-    };
+    let query = db.collection("rental_listings");
 
-    snapshot.docs.forEach((doc) => {
-      const data = doc.data();
-      const source = data.source;
+    if (locations) {
+      const locationArray = Array.isArray(locations) ? locations : [locations];
+      query = query.where("location", "in", locationArray);
+    }
 
-      if (source in allListings) {
-        allListings[source].push({
-          id: doc.id,
-          ...data,
-        });
-      }
-    });
+    if (sources) {
+      const sourceArray = Array.isArray(sources) ? sources : [sources];
+      query = query.where("source", "in", sourceArray);
+    }
 
-    res.json(allListings);
+    if (minPrice) {
+      query = query.where("price", ">=", parseInt(minPrice));
+    }
+
+    if (maxPrice) {
+      query = query.where("price", "<=", parseInt(maxPrice));
+    }
+
+    query = query.offset(offset).limit(limitNumber).orderBy("price", "asc");
+
+    const snapshot = await query.get();
+    const listings = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    res.json(listings);
   } catch (error) {
+    console.error("Error:", error);
     res.status(500).json({ error: error.message });
   }
 });
