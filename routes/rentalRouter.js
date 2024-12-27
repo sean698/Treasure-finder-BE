@@ -12,6 +12,8 @@ rentalRouter.get("/", async (req, res) => {
       sources,
       minPrice,
       maxPrice,
+      bedrooms,
+      bathrooms,
       page = 1,
       limit = 40,
     } = req.query;
@@ -37,6 +39,20 @@ rentalRouter.get("/", async (req, res) => {
 
     if (maxPrice) {
       query = query.where("price", "<=", parseInt(maxPrice));
+    }
+
+    if (bedrooms && bedrooms.length > 0) {
+      const bedroomArray = Array.isArray(bedrooms)
+        ? bedrooms.map((num) => parseInt(num))
+        : [parseInt(bedrooms)];
+      query = query.where("bedrooms", "in", bedroomArray);
+    }
+
+    if (bathrooms && bathrooms.length > 0) {
+      const bathroomArray = Array.isArray(bathrooms)
+        ? bathrooms.map((num) => parseInt(num))
+        : [parseInt(bathrooms)];
+      query = query.where("bathrooms", "in", bathroomArray);
     }
 
     query = query.offset(offset).limit(limitNumber).orderBy("price", "asc");
