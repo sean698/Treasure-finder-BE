@@ -10,15 +10,18 @@ rentalRouter.get("/", async (req, res) => {
     const {
       locations,
       sources,
+      houseTypes,
       minPrice,
       maxPrice,
       bedrooms,
-      bathrooms,
       page = 1,
       limit = 40,
     } = req.query;
     const pageNumber = parseInt(page);
     const limitNumber = parseInt(limit);
+    const parsedMinPrice = parseInt(minPrice);
+    const parsedMaxPrice = parseInt(maxPrice);
+    const parsedBedrooms = parseInt(bedrooms);
     const offset = (pageNumber - 1) * limitNumber;
 
     let query = db.collection("rental_listings");
@@ -33,26 +36,29 @@ rentalRouter.get("/", async (req, res) => {
       query = query.where("source", "in", sourceArray);
     }
 
-    if (minPrice) {
-      query = query.where("price", ">=", parseInt(minPrice));
+    if (houseTypes) {
+      const houseTypeArray = Array.isArray(houseTypes)
+        ? houseTypes
+        : [houseTypes];
+      query = query.where("type", "in", houseTypeArray);
     }
 
-    if (maxPrice) {
-      query = query.where("price", "<=", parseInt(maxPrice));
+    if (parsedMinPrice) {
+      query = query.where("price", ">=", parsedMinPrice);
     }
 
-    if (bedrooms && bedrooms.length > 0) {
-      const bedroomArray = Array.isArray(bedrooms)
-        ? bedrooms.map((num) => parseInt(num))
-        : [parseInt(bedrooms)];
-      query = query.where("bedrooms", "in", bedroomArray);
+    if (parsedMaxPrice) {
+      query = query.where("price", "<=", parsedMaxPrice);
     }
 
-    if (bathrooms && bathrooms.length > 0) {
-      const bathroomArray = Array.isArray(bathrooms)
-        ? bathrooms.map((num) => parseInt(num))
-        : [parseInt(bathrooms)];
-      query = query.where("bathrooms", "in", bathroomArray);
+    if (parsedBedrooms) {
+      if (parsedBedrooms === 1) {
+        query = query.where("bedrooms", "==", 1);
+      } else if (parsedBedrooms === 2) {
+        query = query.where("bedrooms", "==", 2);
+      } else {
+        query = query.where("bedrooms", ">=", 3);
+      }
     }
 
     query = query.offset(offset).limit(limitNumber).orderBy("price", "asc");
