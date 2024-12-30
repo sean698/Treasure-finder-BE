@@ -26,23 +26,6 @@ rentalRouter.get("/", async (req, res) => {
 
     let query = db.collection("rental_listings");
 
-    if (locations) {
-      const locationArray = Array.isArray(locations) ? locations : [locations];
-      query = query.where("location", "in", locationArray);
-    }
-
-    if (sources) {
-      const sourceArray = Array.isArray(sources) ? sources : [sources];
-      query = query.where("source", "in", sourceArray);
-    }
-
-    if (houseTypes) {
-      const houseTypeArray = Array.isArray(houseTypes)
-        ? houseTypes
-        : [houseTypes];
-      query = query.where("type", "in", houseTypeArray);
-    }
-
     if (parsedMinPrice) {
       query = query.where("price", ">=", parsedMinPrice);
     }
@@ -59,6 +42,23 @@ rentalRouter.get("/", async (req, res) => {
       } else {
         query = query.where("bedrooms", ">=", 3);
       }
+    }
+
+    if (houseTypes) {
+      const houseTypeArray = Array.isArray(houseTypes)
+        ? houseTypes
+        : [houseTypes];
+      query = query.where("type", "in", houseTypeArray);
+    }
+
+    if (locations) {
+      const locationArray = Array.isArray(locations) ? locations : [locations];
+      query = query.where("location", "in", locationArray);
+    }
+
+    if (sources) {
+      const sourceArray = Array.isArray(sources) ? sources : [sources];
+      query = query.where("source", "in", sourceArray);
     }
 
     query = query.offset(offset).limit(limitNumber).orderBy("price", "asc");
